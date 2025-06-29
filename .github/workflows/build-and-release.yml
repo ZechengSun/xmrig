@@ -3,23 +3,25 @@ name: Build and Release XMRig
 on:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
+      - 'v*'  # 当你 push v1.0.0 这样的标签时触发
+  workflow_dispatch:  # 支持手动触发构建
 
 jobs:
   build-windows:
+    name: Build for Windows
     runs-on: windows-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: Install Chocolatey dependencies
         run: |
           choco install cmake -y
           choco install nasm -y
           choco install msys2 -y
 
-      - name: Setup MSYS2
+      - name: Setup MSYS2 environment
         uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -32,12 +34,12 @@ jobs:
       - name: Build XMRig (x64)
         shell: msys2 {0}
         run: |
-          mkdir build
+          mkdir -p build
           cd build
-          cmake .. -G "MinGW Makefiles" -DXMRIG_NO_DONATE=1 -DCMAKE_BUILD_TYPE=Release
-          cmake --build . --config Release
+          cmake .. -DXMRIG_NO_DONATE=1 -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
 
-      - name: Upload Release Artifact
+      - name: Upload to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
           files: build/xmrig.exe
