@@ -1,3 +1,4 @@
+
 name: Build Static XMRig
 
 on:
@@ -25,7 +26,6 @@ jobs:
           mingw-w64-x86_64-cmake
           mingw-w64-x86_64-make
           base-devel
-
     - name: Build XMRig (static, use built-in FetchContent)
       shell: msys2 {0}
       run: |
@@ -38,7 +38,9 @@ jobs:
           -DWITH_TLS=ON \
           -DCMAKE_EXE_LINKER_FLAGS="-static"
         cmake --build . --config Release
-
+        echo "======== BUILD DIR CONTENTS ========"
+        ls -l
+        find .
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
@@ -46,7 +48,6 @@ jobs:
         path: |
           build/*.exe
           build/Release/*.exe
-
     - name: Upload to GitHub Release
       if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
       uses: softprops/action-gh-release@v2
