@@ -51,12 +51,15 @@ jobs:
           git clone https://github.com/microsoft/vcpkg.git
           cd vcpkg
           .\bootstrap-vcpkg.bat
-          .\vcpkg.exe install libuv:x64-windows-static
+          .\vcpkg.exe install libuv:x64-windows
       - name: Configure CMake
         run: |
           mkdir build
           cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
-            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
+            DWITH_CN_LITE=OFF -DWITH_CN_HEAVY=OFF \
+                   -DWITH_RANDOMX=ON -DWITH_ARGON2=ON \
+                   -DWITH_TLS=ON -DWITH_HTTP=ON \
+                   -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: cmake --build build --config Release
       - name: Upload artifact
