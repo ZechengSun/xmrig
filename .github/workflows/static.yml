@@ -52,8 +52,8 @@ jobs:
       - name: Configure CMake
         run: |
           mkdir build
-          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
-              
+          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 ` 
+               -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake
       - name: Build
         run: cmake --build build --config Release
       - name: Upload artifact
