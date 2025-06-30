@@ -42,26 +42,33 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+         - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          choco install cmake nasm git -y
+    - name: Install build tools
+      run: choco install cmake nasm python git -y
 
-      - name: Configure CMake
-        run: |
-          mkdir build
-          cd build
-          cmake .. -G "Visual Studio 17 2022" -A x64 -DWITH_CN_LITE=OFF
+    - name: Setup vcpkg and libuv
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git
+        cd vcpkg
+        .\bootstrap-vcpkg.bat
+        .\vcpkg.exe install libuv:x64-windows
+        cd ..
 
-      - name: Build
-        run: |
-          cmake --build build --config Release
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: xmrig-windows
-          path: build/Release/xmrig.exe
+    - name: Build
+      run: |
+        cmake --build build --config Release
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: xmrig-windows
+        path: build/Release/xmrig.exe
 
