@@ -53,17 +53,17 @@ jobs:
           mingw-w64-x86_64-make
           base-devel
 
-    - name: Build libuv (static)
+    - name: Build libuv (static, no test)
       shell: msys2 {0}
       run: |
         git clone https://github.com/libuv/libuv.git
         cd libuv
         mkdir build && cd build
-        cmake .. -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF
+        cmake .. -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
         cmake --build . --config Release
         echo "LIBUV_INCLUDE=$(pwd | sed 's|/c/|C:/|' | sed 's|/|\\|g')\\..\\include" >> $GITHUB_ENV
         echo "LIBUV_STATIC=$(pwd | sed 's|/c/|C:/|' | sed 's|/|\\|g')\\Release\\uv.lib" >> $GITHUB_ENV
-
+        
     - name: Build XMRig
       shell: msys2 {0}
       run: |
