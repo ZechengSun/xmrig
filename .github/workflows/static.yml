@@ -38,6 +38,18 @@ jobs:
           -DWITH_TLS=OFF \
           -DCMAKE_EXE_LINKER_FLAGS="-static"
         cmake --build . --config Release
+        echo "======== BUILD DIR CONTENTS ========"
+        ls -l
+        find .
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: xmrig-static
+        path: |
+          build/*.exe
+          build/Release/*.exe
+
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
