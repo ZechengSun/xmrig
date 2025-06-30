@@ -1,5 +1,4 @@
-
-name: Build Static XMRig
+name: Build Static XMRig (CPU only)
 
 on:
   push:
@@ -26,32 +25,36 @@ jobs:
           mingw-w64-x86_64-cmake
           mingw-w64-x86_64-make
           base-devel
-    - name: Build XMRig (static, use built-in FetchContent)
+
+    - name: Build XMRig (static, CPU only)
       shell: msys2 {0}
       run: |
         mkdir build && cd build
         cmake .. -G "MinGW Makefiles" \
           -DCMAKE_BUILD_TYPE=Release \
-          -DWITH_HWLOC=ON \
+          -DWITH_HWLOC=OFF \
+          -DWITH_OPENCL=OFF \
+          -DWITH_CUDA=OFF \
           -DBUILD_STATIC=ON \
-          -DWITH_LIBUV=ON \
           -DWITH_TLS=ON \
           -DCMAKE_EXE_LINKER_FLAGS="-static"
         cmake --build . --config Release
         echo "======== BUILD DIR CONTENTS ========"
         ls -l
         find .
+
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
-        name: xmrig-static
+        name: xmrig-static-cpu
         path: |
           build/*.exe
           build/Release/*.exe
+
     - name: Upload to GitHub Release
       if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
       uses: softprops/action-gh-release@v2
       with:
-        files: build/xmrig.exe
+        files: build/*.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
