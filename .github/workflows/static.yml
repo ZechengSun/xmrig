@@ -30,7 +30,8 @@ jobs:
       shell: msys2 {0}
       run: |
         mkdir build && cd build
-        cmake .. 
+        cmake .. -G "MinGW Makefiles" \
+          -DCMAKE_BUILD_TYPE=Release \
         cmake --build . --config Release
 
     - name: Upload build artifact
