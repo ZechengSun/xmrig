@@ -23,7 +23,7 @@ jobs:
       - name: Configure CMake
         run: |
           mkdir build && cd build
-          cmake .. -DUV_INCLUDE_DIR=path/to/libuv/include -DUV_LIBRARY=path/to/libuv.a
+          cmake ..
 
       - name: Build
         run: |
@@ -38,28 +38,59 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: bash
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install build tools
-        run: choco install cmake nasm python git -y
-      - name: Setup vcpkg and install libuv
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git
-          cd vcpkg
-          .\bootstrap-vcpkg.bat
-          .\vcpkg.exe install libuv:x64-windows
-      - name: Configure CMake
-        run: |
-          mkdir build
-          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
-            -DUV_INCLUDE_DIR="${{ github.workspace }}\vcpkg\installed\x64-windows\include" `
-            -DUV_LIBRARY="${{ github.workspace }}\vcpkg\installed\x64-windows\lib\uv.lib" `
-      - name: Build
-        run: cmake --build build --config Release
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: xmrig-windows-x86
-          path: build/Release/xmrig.exe
+    - name: Checkout XMRig
+      uses: actions/checkout@v4
+
+    - name: Install MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          git
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-make
+          mingw-w64-x86_64-pkg-config
+
+    - name: Build libuv (static)
+      run: |
+        git clone https://github.com/libuv/libuv.git
+        cd libuv
+        mkdir build && cd build
+        cmake .. -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF
+        cmake --build . --config Release
+        echo "LIBUV_INCLUDE=$PWD/../include" >> $GITHUB_ENV
+        echo "LIBUV_STATIC=$PWD/Release/uv_a.lib" >> $GITHUB_ENV
+
+    - name: Build XMRig (static libuv)
+      run: |
+        mkdir build && cd build
+        cmake .. -G "MinGW Makefiles" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DWITH_HWLOC=OFF \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DUV_INCLUDE_DIR="$LIBUV_INCLUDE" \
+          -DUV_LIBRARY="$LIBUV_STATIC" \
+          -DCMAKE_EXE_LINKER_FLAGS="-static"
+        cmake --build . --config Release
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: xmrig-static
+        path: build/xmrig.exe
+
+    - name: Upload to Release (if tagged)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: build/xmrig.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
