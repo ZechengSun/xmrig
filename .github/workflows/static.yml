@@ -42,7 +42,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-         - name: Checkout code
+    - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Install build tools
