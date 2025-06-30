@@ -30,7 +30,10 @@ jobs:
       shell: msys2 {0}
       run: |
         mkdir build && cd build
-        cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static"
+        cmake .. -G "MinGW Makefiles"\
+          -DCMAKE_BUILD_TYPE=Release \
+          -DWITH_HWLOC=ON\
+          -DCMAKE_EXE_LINKER_FLAGS="-static"
         cmake --build . --config Release
 
     - name: Upload build artifact
