@@ -30,9 +30,12 @@ jobs:
       shell: msys2 {0}
       run: |
         mkdir build && cd build
-        cmake .. -G "MinGW Makefiles"\
+        cmake .. -G "MinGW Makefiles" \
           -DCMAKE_BUILD_TYPE=Release \
-          -DWITH_HWLOC=ON\
+          -DWITH_HWLOC=ON \
+          -DBUILD_STATIC=ON \
+          -DWITH_LIBUV=ON \
+          -DWITH_TLS=ON \
           -DCMAKE_EXE_LINKER_FLAGS="-static"
         cmake --build . --config Release
 
