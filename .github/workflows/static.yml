@@ -38,8 +38,7 @@ jobs:
 
   build-windows:
    runs-on: windows-latest
-
-    steps:
+   steps:
     - name: Checkout XMRig
       uses: actions/checkout@v4
 
